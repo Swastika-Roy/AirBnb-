@@ -1,20 +1,21 @@
 package com.codingshuttle.projects.airBnbApp.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-@Entity
-@Getter
-@Setter
-@Table(uniqueConstraints = @UniqueConstraint
-        (name = "unique_hotel_room_date",columnNames = {"hotel_id","room_id","date"}))
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+//@Entity
+//@Getter
+//@Setter
+//@Table(uniqueConstraints = @UniqueConstraint
+//        (name = "unique_hotel_room_date",columnNames = {"hotel_id","room_id","date"}))
 public class Inventory {
 
     @Id
