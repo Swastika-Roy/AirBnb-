@@ -8,14 +8,15 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+@Entity
+@Getter
+@Setter
+@Table(uniqueConstraints = @UniqueConstraint
+        (name = "unique_hotel_room_date",columnNames = {"hotel_id","room_id","date"}))
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-//@Entity
-//@Getter
-//@Setter
-//@Table(uniqueConstraints = @UniqueConstraint
-//        (name = "unique_hotel_room_date",columnNames = {"hotel_id","room_id","date"}))
 public class Inventory {
 
     @Id
@@ -33,8 +34,19 @@ public class Inventory {
     @Column(nullable = false)
     private LocalDate date;
 
-    @Column(nullable = false,columnDefinition = "INTEGER DEFAULT 0")
-    private Integer bookedCount;
+//    @Column(nullable = false,columnDefinition = "INTEGER DEFAULT 0")
+//    private Integer bookedCount;
+//
+//    @Column(nullable = false,columnDefinition = "INTEGER DEFAULT 0")
+//    private Integer reservedCount;
+
+    @Column(nullable = false)
+    private Integer reservedCount = 0;
+
+    @Column(nullable = false)
+    private Integer bookedCount = 0;
+
+
 
     @Column(nullable = false)
     private Integer totalCount;
@@ -56,4 +68,13 @@ public class Inventory {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+    @PrePersist
+    public void prePersist() {
+        if (reservedCount == null) reservedCount = 0;
+        if (bookedCount == null) bookedCount = 0;
+        if (closed == null) closed = false;
+    }
+
+
+
 }

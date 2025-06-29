@@ -9,4 +9,6 @@ public interface HotelService {
     void deleteHotelById(Long id);
 
     void activateHotel(Long hotelId);
+
+    HotelDto getHotelInfoById(Long hotelId);
 }
