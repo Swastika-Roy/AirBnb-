@@ -29,7 +29,7 @@ public class Inventory {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id",nullable = false)
-    private Room room;
+    private  Room room;
 
     @Column(nullable = false)
     private LocalDate date;
@@ -75,6 +75,9 @@ public class Inventory {
         if (closed == null) closed = false;
     }
 
+    public  Room getRoom() {
+        return room;
+    }
 
 
 }

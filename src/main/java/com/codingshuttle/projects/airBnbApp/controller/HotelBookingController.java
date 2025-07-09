@@ -12,15 +12,11 @@ import java.util.List;
 
 @RestController
 
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/bookings")
 public class HotelBookingController {
 
     private final BookingService bookingService;
-
-    public HotelBookingController(BookingService bookingService) {
-        this.bookingService = bookingService;
-    }
 
     @PostMapping("/init")
     public ResponseEntity<BookingDto> initialiseBooking(@RequestBody BookingRequest bookingRequest){
