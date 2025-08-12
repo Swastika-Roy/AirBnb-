@@ -28,4 +28,11 @@ public class HotelBookingController {
                                                 @RequestBody List<GuestDto> guestDtoList) {
         return ResponseEntity.ok(bookingService.addGuests(bookingId, guestDtoList));
     }
+
+    @PostMapping("/{bookingId}/payments")
+    @Operation(summary = "Initiate payments flow for the booking",tags = {"Booking Flow"})
+    public ResponseEntity<BookingPaymentInitResponseDto> initiatePayment(@PathVariable Long bookingId){
+        String sessionUrl = bookingService.initiatePayments(bookingId);
+        return ResponseEntity.ok(new BookingPaymentInitResponseDto(sessionUrl));
+    }
 }
