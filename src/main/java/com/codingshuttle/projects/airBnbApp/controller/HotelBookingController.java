@@ -1,8 +1,6 @@
 package com.codingshuttle.projects.airBnbApp.controller;
 
-import com.codingshuttle.projects.airBnbApp.dto.BookingDto;
-import com.codingshuttle.projects.airBnbApp.dto.BookingRequest;
-import com.codingshuttle.projects.airBnbApp.dto.GuestDto;
+import com.codingshuttle.projects.airBnbApp.dto.*;
 import com.codingshuttle.projects.airBnbApp.service.BookingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +28,20 @@ public class HotelBookingController {
     }
 
     @PostMapping("/{bookingId}/payments")
-    @Operation(summary = "Initiate payments flow for the booking",tags = {"Booking Flow"})
+//    @Operation(summary = "Initiate payments flow for the booking",tags = {"Booking Flow"})
     public ResponseEntity<BookingPaymentInitResponseDto> initiatePayment(@PathVariable Long bookingId){
         String sessionUrl = bookingService.initiatePayments(bookingId);
         return ResponseEntity.ok(new BookingPaymentInitResponseDto(sessionUrl));
+    }
+
+    @PostMapping("/{bookingId}/cancel")
+    public ResponseEntity<Void> cancelBooking(@PathVariable Long bookingId){
+        bookingService.cancelBooking(bookingId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{bookingId}/status")
+    public ResponseEntity<BookingStatusResponseDto> getBookingStatus(@PathVariable Long bookingId){
+        return ResponseEntity.ok(new BookingStatusResponseDto(bookingService.getBookingStatus(bookingId)));
     }
 }

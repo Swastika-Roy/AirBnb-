@@ -9,13 +9,19 @@ import com.codingshuttle.projects.airBnbApp.entity.enums.BookingStatus;
 import com.codingshuttle.projects.airBnbApp.exception.UnAuthorisedException;
 import com.codingshuttle.projects.airBnbApp.repository.*;
 import com.codingshuttle.projects.airBnbApp.stategy.PricingService;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Event;
 import com.stripe.model.Discount;
+import com.stripe.model.checkout.Session;
+import com.stripe.model.Refund;
+import com.stripe.param.RefundCreateParams;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.boot.web.servlet.server.Session;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +29,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
+import static org.springframework.boot.web.servlet.server.Session.*;
 
 @Service
 @Slf4j
@@ -137,6 +145,51 @@ public class BookingServiceImpl implements BookingService {
         bookingRepository.save(booking);
 
         return sessionUrl;
+    }
+
+    @Override
+    @Transactional
+    public void cancelBooking(Long bookingId){
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new ResourceNotFoundException("Booking not found with id: "+bookingId)
+        );
+        User  user = getCurrentUser();
+        if(!user.equals(booking.getUser())){
+            throw new UnAuthorisedException("Booking does not belong to this user with id:"+user.getId());
+        }
+        if(booking.getBookingStatus() != BookingStatus.CONFIRMED){
+            throw new IllegalStateException("Only confirmed bookings can be cancelled");
+        }
+        booking.setBookingStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+
+        inventoryRepository.findAndLockAvailableInventory(booking.getRoom().getId(),booking.getCheckInDate(),
+                booking.getCheckOutDate(),booking.getRoomsCount());
+
+        inventoryRepository.cancelBooking(booking.getRoom().getId(),booking.getCheckInDate(),
+                booking.getCheckOutDate(),booking.getRoomsCount());
+
+        try {
+            Session session = Session.retrieve(booking.getPaymentSessionId());
+            RefundCreateParams refundParams = RefundCreateParams.builder()
+                    .setPaymentIntent(session.getPaymentIntent())
+                    .build();
+            Refund.create(refundParams);
+        }catch (StripeException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public BookingStatus getBookingStatus(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(
+                () -> new ResourceNotFoundException("Booking not found with id: "+bookingId)
+        );
+        User user = getCurrentUser();
+        if(!user.equals(booking.getUser())){
+            throw new UnAuthorisedException("Booking does not belong to this user with id: "+user.getId());
+        }
+        return booking.getBookingStatus();
     }
 
     private boolean hasBookingExpired(Booking booking) {
